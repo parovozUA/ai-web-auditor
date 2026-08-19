@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Web Auditor — Report run-20260819-165148-2a2e74</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #38bdf8;
+            --accent: #818cf8;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --radius: 8px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.5rem;
+        }
+        h1 { font-size: 1.75rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+        h2 { font-size: 1.25rem; font-weight: 600; color: var(--text); margin: 2rem 0 1rem; border-left: 4px solid var(--primary); padding-left: 0.5rem; }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .meta-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+        }
+        .meta-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+        .meta-value { font-size: 0.95rem; color: var(--text); font-weight: 500; word-break: break-all; }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-clean { background: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .status-warning { background: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+        .status-danger { background: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+        }
+        .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .card-p { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .badge-low { background: #0284c7; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .badge-medium { background: #d97706; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .badge-high { background: #dc2626; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            font-size: 0.875rem;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+        th { background: #131d31; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
+        tr:last-child td { border-bottom: none; }
+        .code-tag {
+            font-family: monospace;
+            background: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+        .remediation-box {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid var(--primary);
+            padding: 0.75rem 1rem;
+            margin-top: 0.75rem;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            font-size: 0.85rem;
+        }
+        .empty-notice {
+            background: var(--card-bg);
+            border: 1px dashed var(--card-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--card-border);
+            padding-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Web Auditor — Reliability Report</h1>
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">Seed URL</div>
+                    <div class="meta-value">https://news.ycombinator.com/</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Run ID</div>
+                    <div class="meta-value">run-20260819-165148-2a2e74</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Status</div>
+                    <div class="meta-value">
+                        
+                            <span class="status-badge status-warning">Issues Detected (1)</span>
+                        
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Pages Scanned</div>
+                    <div class="meta-value">6</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Analysis Status</div>
+                    <div class="meta-value">completed</div>
+                </div>
+            </div>
+        </header>
+
+        
+
+        <section>
+            <h2>Grounded Incidents (2)</h2>
+            
+                <div class="card-grid">
+                    
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <div class="card-title">Widespread Internal Link Failures (HTTP 429 and HTTP 503)</div>
+                            <span class="badge-high">high</span>
+                        </div>
+                        <p class="card-p">Multiple internal links across several pages (including /news, /newest, /front, /newcomments, and /ask) are returning HTTP 429 (Too Many Requests) and HTTP 503 (Service Unavailable) status codes. This prevents successful navigation to key sections such as user profiles, item details, submission pages, and voting endpoints.</p>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            <strong>Affected Pages (6):</strong>
+                            <ul style="padding-left: 1.2rem; margin-top: 0.25rem;">
+                                
+                                <li>https://news.ycombinator.com/</li>
+                                
+                                <li>https://news.ycombinator.com/ask</li>
+                                
+                                <li>https://news.ycombinator.com/front</li>
+                                
+                                <li>https://news.ycombinator.com/newcomments</li>
+                                
+                                <li>https://news.ycombinator.com/newest</li>
+                                
+                                <li>https://news.ycombinator.com/news</li>
+                                
+                            </ul>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            <strong>Finding IDs:</strong> finding-033349d313f08221, finding-0353f229d12f420b, finding-0377351388691a32, finding-058d2bfd91ae0365, finding-0f02ee3db19ae65b, finding-192ef54fc9fcbd23, finding-1d22cd896c8e1688, finding-1f54129f83393904, finding-205c6acb2400c68d, finding-2716ed3293333fea, finding-27edb5501ccf27e0, finding-2b598db30f26b038, finding-32c563b7d2bca65c, finding-351657a77d167d5c, finding-36aee2fe5b0d6816, finding-3a834c0ebf5c7bef, finding-43ed79d558bcd25f, finding-444191e31962c2d1, finding-5a0e718c8568a108, finding-5d9d716d388b3948, finding-620e547084a6c62d, finding-63de26abb4c0ec11, finding-67233cc2c38afe8d, finding-71cdbaa8de9aee5f, finding-7227af4b955f3d06, finding-74f030c48b0810f5, finding-7bccc6c543f643a4, finding-7ecd18d28c1118d4, finding-86fca85d3a8cb6c2, finding-8a37535303c19531, finding-8d2a926069612ecd, finding-90cf2744beac1008, finding-914fbca12e532087, finding-91c0bc6a86268407, finding-94a351cbadd65b5d, finding-9b7f3c5d67508764, finding-9daf37f26b2660f1, finding-b42873e2ca860727, finding-b7a3b17abc46161f, finding-c659640261f72ccc, finding-c7ed2222d1af5b96, finding-cfa490cca813297c, finding-d39292f785de2db4, finding-d60721dc000fb088, finding-d9d31b72d3eeb923, finding-dbeaec810b77a339, finding-e176f200dbe2ed5d, finding-e7646090a70a4564, finding-e878479e65e73b26, finding-eb2f3e102ac15927, finding-eb3a710490c9f0f6, finding-ef57af0f9252cefb
+                        </div>
+                        <div class="remediation-box">
+                            <strong>Remediation:</strong> Investigate server-side rate limiting configurations that may be overly aggressive and triggering HTTP 429 responses for legitimate internal transitions. Additionally, check server capacity, load balancers, and application logs to resolve the HTTP 503 Service Unavailable errors on endpoints like /jobs, /front, and /news.
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <div class="card-title">Missing H1 Headers and Meta Descriptions Across Multiple Pages</div>
+                            <span class="badge-low">low</span>
+                        </div>
+                        <p class="card-p">Several key pages, including the homepage, /news, /newest, /front, /newcomments, and /ask, are missing H1 headings and meta descriptions. This negatively impacts search engine optimization (SEO) and accessibility.</p>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            <strong>Affected Pages (6):</strong>
+                            <ul style="padding-left: 1.2rem; margin-top: 0.25rem;">
+                                
+                                <li>https://news.ycombinator.com/</li>
+                                
+                                <li>https://news.ycombinator.com/ask</li>
+                                
+                                <li>https://news.ycombinator.com/front</li>
+                                
+                                <li>https://news.ycombinator.com/newcomments</li>
+                                
+                                <li>https://news.ycombinator.com/newest</li>
+                                
+                                <li>https://news.ycombinator.com/news</li>
+                                
+                            </ul>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            <strong>Finding IDs:</strong> finding-22e5b83f6be9b600, finding-29fd85dd68bbfa23, finding-2bbd1d32881e1df4, finding-2f6d1eacc9405f46, finding-4a661a42f38d589d, finding-57dda88036cdf3c2, finding-77b1ebfb78306e0e, finding-8391feb5d85624fa, finding-8565c7af0a987402, finding-9f64aa8b9a00d549, finding-d007afe06258f6f6, finding-e99dfdbe46dec49b
+                        </div>
+                        <div class="remediation-box">
+                            <strong>Remediation:</strong> Ensure that every page contains a single, descriptive H1 header representing the main topic of the page. Additionally, add unique and concise meta descriptions to the HTML head of each page to improve search engine snippet generation.
+                        </div>
+                    </div>
+                    
+                </div>
+            
+        </section>
+
+        <section>
+            <h2>Deterministic Findings (64)</h2>
+            
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Finding ID</th>
+                            <th>Code</th>
+                            <th>Source Page</th>
+                            <th>Message</th>
+                            <th>Target / Resource</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-192ef54fc9fcbd23</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/jobs</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-27edb5501ccf27e0</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-444191e31962c2d1</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/user?id=%2A%2A%2A</td>
+                            <td>7</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-67233cc2c38afe8d</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-8391feb5d85624fa</span></td>
+                            <td><span class="code-tag">h1_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Page H1 is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-94a351cbadd65b5d</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/from?site=%2A%2A%2A</td>
+                            <td>8</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-9b7f3c5d67508764</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/submit</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-e176f200dbe2ed5d</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/vote?id=%2A%2A%2A&amp;how=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-e99dfdbe46dec49b</span></td>
+                            <td><span class="code-tag">meta_description_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Meta description is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-eb3a710490c9f0f6</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/hide?id=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>8</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-ef57af0f9252cefb</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/login?goto=%2A%2A%2A</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-058d2bfd91ae0365</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/submit</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-2b598db30f26b038</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/jobs</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-4a661a42f38d589d</span></td>
+                            <td><span class="code-tag">h1_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Page H1 is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-5d9d716d388b3948</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/vote?id=%2A%2A%2A&amp;how=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-77b1ebfb78306e0e</span></td>
+                            <td><span class="code-tag">meta_description_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Meta description is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-8d2a926069612ecd</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-cfa490cca813297c</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/hide?id=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>8</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-d39292f785de2db4</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/login?goto=%2A%2A%2A</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-e7646090a70a4564</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/user?id=%2A%2A%2A</td>
+                            <td>7</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-eb2f3e102ac15927</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/from?site=%2A%2A%2A</td>
+                            <td>8</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-0f02ee3db19ae65b</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/submit</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-22e5b83f6be9b600</span></td>
+                            <td><span class="code-tag">meta_description_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Meta description is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-2716ed3293333fea</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-351657a77d167d5c</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/item?id=%2A%2A%2A</td>
+                            <td>3</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-43ed79d558bcd25f</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/from?site=%2A%2A%2A</td>
+                            <td>8</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-63de26abb4c0ec11</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/hide?id=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>8</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-74f030c48b0810f5</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/jobs</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-7ecd18d28c1118d4</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/vote?id=%2A%2A%2A&amp;how=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-8565c7af0a987402</span></td>
+                            <td><span class="code-tag">h1_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Page H1 is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-8a37535303c19531</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/user?id=%2A%2A%2A</td>
+                            <td>8</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-91c0bc6a86268407</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-d9d31b72d3eeb923</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newest</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/login?goto=%2A%2A%2A</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-0353f229d12f420b</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/login?goto=%2A%2A%2A</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-2f6d1eacc9405f46</span></td>
+                            <td><span class="code-tag">h1_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Page H1 is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-36aee2fe5b0d6816</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-5a0e718c8568a108</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front?day=%2A%2A%2A</td>
+                            <td>2</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-7227af4b955f3d06</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/user?id=%2A%2A%2A</td>
+                            <td>9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-7bccc6c543f643a4</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/from?site=%2A%2A%2A</td>
+                            <td>9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-86fca85d3a8cb6c2</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/submit</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-c659640261f72ccc</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/vote?id=%2A%2A%2A&amp;how=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>10</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-c7ed2222d1af5b96</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/item?id=%2A%2A%2A</td>
+                            <td>2</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-d007afe06258f6f6</span></td>
+                            <td><span class="code-tag">meta_description_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Meta description is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-d60721dc000fb088</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/jobs</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-0377351388691a32</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-1d22cd896c8e1688</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-1f54129f83393904</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/vote?id=%2A%2A%2A&amp;how=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-205c6acb2400c68d</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/user?id=%2A%2A%2A</td>
+                            <td>9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-2bbd1d32881e1df4</span></td>
+                            <td><span class="code-tag">h1_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Page H1 is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-57dda88036cdf3c2</span></td>
+                            <td><span class="code-tag">meta_description_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Meta description is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-71cdbaa8de9aee5f</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/item?id=%2A%2A%2A</td>
+                            <td>15</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-90cf2744beac1008</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/jobs</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-914fbca12e532087</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/submit</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-9daf37f26b2660f1</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/newcomments</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/login?goto=%2A%2A%2A</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-033349d313f08221</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/user?id=%2A%2A%2A</td>
+                            <td>11</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-29fd85dd68bbfa23</span></td>
+                            <td><span class="code-tag">meta_description_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Meta description is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-32c563b7d2bca65c</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/vote?id=%2A%2A%2A&amp;how=%2A%2A%2A&amp;goto=%2A%2A%2A</td>
+                            <td>14</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-3a834c0ebf5c7bef</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/login?goto=%2A%2A%2A</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-620e547084a6c62d</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/news</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-9f64aa8b9a00d549</span></td>
+                            <td><span class="code-tag">h1_missing</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Page H1 is missing.</td>
+                            <td style="word-break: break-all;">-</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-b42873e2ca860727</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/item?id=%2A%2A%2A</td>
+                            <td>10</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-b7a3b17abc46161f</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/jobs</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-dbeaec810b77a339</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Internal link returned HTTP 429</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/submit</td>
+                            <td>1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="code-tag">finding-e878479e65e73b26</span></td>
+                            <td><span class="code-tag">broken_internal_link</span></td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/ask</td>
+                            <td>Internal link returned HTTP 503</td>
+                            <td style="word-break: break-all;">https://news.ycombinator.com/front</td>
+                            <td>1</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            
+        </section>
+
+        <section>
+            <h2>Execution Trace (6 events)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Node</th>
+                        <th>Event</th>
+                        <th>Status</th>
+                        <th>Elapsed (ms)</th>
+                        <th>Counts / Tool</th>
+                        <th>Model Usage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td><strong>scan_seed</strong></td>
+                        <td>scan</td>
+                        <td>
+                            
+                                <span style="color: var(--success);">completed</span>
+                            
+                        </td>
+                        <td>3455</td>
+                        <td>
+                            
+                            
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">findings=11</span>
+                            
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">internal_links=50</span>
+                            
+                        </td>
+                        <td>
+                            
+                                -
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><strong>investigator_tool_request</strong></td>
+                        <td>agent_tool_decision</td>
+                        <td>
+                            
+                                <span style="color: var(--success);">completed</span>
+                            
+                        </td>
+                        <td>3296</td>
+                        <td>
+                            
+                            
+                        </td>
+                        <td>
+                            
+                                <span style="font-size: 0.75rem; color: var(--accent);">
+                                    tokens: in=1957, out=239
+                                </span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><strong>scan_related_pages</strong></td>
+                        <td>tool_execution</td>
+                        <td>
+                            
+                                <span style="color: var(--success);">completed</span>
+                            
+                        </td>
+                        <td>13787</td>
+                        <td>
+                            
+                                <span class="code-tag">scan_related_pages</span>
+                            
+                            
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">pages_scanned=5</span>
+                            
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">findings=64</span>
+                            
+                        </td>
+                        <td>
+                            
+                                -
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><strong>investigator_synthesis</strong></td>
+                        <td>agent_synthesis</td>
+                        <td>
+                            
+                                <span style="color: var(--success);">completed</span>
+                            
+                        </td>
+                        <td>34530</td>
+                        <td>
+                            
+                            
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">incidents=2</span>
+                            
+                        </td>
+                        <td>
+                            
+                                -
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><strong>reviewer_agent</strong></td>
+                        <td>agent_review</td>
+                        <td>
+                            
+                                <span style="color: var(--success);">completed</span>
+                            
+                        </td>
+                        <td>17090</td>
+                        <td>
+                            
+                            
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">incidents=2</span>
+                            
+                        </td>
+                        <td>
+                            
+                                -
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td><strong>validate_review</strong></td>
+                        <td>validation</td>
+                        <td>
+                            
+                                <span style="color: var(--success);">completed</span>
+                            
+                        </td>
+                        <td>0</td>
+                        <td>
+                            
+                            
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">incidents=2</span>
+                            
+                        </td>
+                        <td>
+                            
+                                -
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </section>
+
+        <footer>
+            Generated by AI Web Auditor at 2026-08-19T16:53:00.893052+00:00
+        </footer>
+    </div>
+</body>
+</html>

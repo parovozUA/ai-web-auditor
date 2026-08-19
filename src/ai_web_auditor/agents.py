@@ -1,7 +1,8 @@
 import os
+from pathlib import Path
 from typing import Any, Protocol
 
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -11,9 +12,11 @@ from ai_web_auditor.models import (
     ReviewResult,
 )
 from ai_web_auditor.prompts import (
-    INVESTIGATOR_SYNTHESIS_PROMPT,
-    INVESTIGATOR_TOOL_PROMPT,
-    REVIEWER_PROMPT,
+    INVESTIGATOR_SYNTHESIS_SYSTEM_PROMPT,
+    INVESTIGATOR_TOOL_SYSTEM_PROMPT,
+    REVIEWER_SYSTEM_PROMPT,
+    format_findings_payload,
+    format_investigation_payload,
 )
 
 
@@ -53,14 +56,21 @@ class AgentBackend(Protocol):
         raise NotImplementedError
 
 
-def _serialize_findings_for_prompt(findings: list[Finding]) -> str:
-    lines: list[str] = []
-    for f in findings:
-        lines.append(
-            f"- ID: {f.finding_id} | Code: {f.check_code.value} | Page: {f.source_page} | "
-            f"Message: {f.message} | Target: {f.target_url or 'N/A'}"
-        )
-    return "\n".join(lines) if lines else "(No findings)"
+def _load_env_if_present() -> None:
+    env_file = Path(".env")
+    if env_file.is_file():
+        try:
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k = k.strip()
+                v = v.strip().strip("\"'")
+                if k and k not in os.environ:
+                    os.environ[k] = v
+        except Exception:
+            pass
 
 
 class GeminiAgentBackend:
@@ -83,6 +93,7 @@ class GeminiAgentBackend:
 
     def _get_llm(self) -> Any:
         if self._llm is None:
+            _load_env_if_present()
             api_key = os.getenv("GEMINI_API_KEY")
             if not api_key:
                 raise AgentUnavailableError(
@@ -113,13 +124,19 @@ class GeminiAgentBackend:
     async def request_related_scan(self, seed_findings: list[Finding]) -> bool:
         llm = self._get_llm()
         tool_bound_llm = llm.bind_tools([SCAN_RELATED_PAGES_TOOL])
-        prompt_text = (
-            f"{INVESTIGATOR_TOOL_PROMPT}\n\n"
-            f"=== SEED FINDINGS ===\n"
-            f"{_serialize_findings_for_prompt(seed_findings)}"
-        )
+        messages = [
+            SystemMessage(content=INVESTIGATOR_TOOL_SYSTEM_PROMPT),
+            HumanMessage(
+                content=(
+                    f"Observed seed findings:\n\n"
+                    f"{format_findings_payload(seed_findings)}\n\n"
+                    "Determine whether to call scan_related_pages to investigate "
+                    "cross-page recurrence."
+                )
+            ),
+        ]
         try:
-            response = await tool_bound_llm.ainvoke([SystemMessage(content=prompt_text)])
+            response = await tool_bound_llm.ainvoke(messages)
             self._extract_usage(response)
             tool_calls = getattr(response, "tool_calls", [])
             if not tool_calls:
@@ -139,13 +156,18 @@ class GeminiAgentBackend:
         llm = self._get_llm()
         structured_llm = llm.with_structured_output(InvestigationResult)
         all_findings = seed_findings + related_findings
-        prompt_text = (
-            f"{INVESTIGATOR_SYNTHESIS_PROMPT}\n\n"
-            f"=== OBSERVED FINDINGS ===\n"
-            f"{_serialize_findings_for_prompt(all_findings)}"
-        )
+        messages = [
+            SystemMessage(content=INVESTIGATOR_SYNTHESIS_SYSTEM_PROMPT),
+            HumanMessage(
+                content=(
+                    f"Observed findings across pages:\n\n"
+                    f"{format_findings_payload(all_findings)}\n\n"
+                    "Synthesize the findings into coherent incidents."
+                )
+            ),
+        ]
         try:
-            result = await structured_llm.ainvoke([SystemMessage(content=prompt_text)])
+            result = await structured_llm.ainvoke(messages)
             self._extract_usage(result)
             if isinstance(result, InvestigationResult):
                 return result
@@ -162,15 +184,18 @@ class GeminiAgentBackend:
     ) -> ReviewResult:
         llm = self._get_llm()
         structured_llm = llm.with_structured_output(ReviewResult)
-        prompt_text = (
-            f"{REVIEWER_PROMPT}\n\n"
-            f"=== PROPOSED INVESTIGATION ===\n"
-            f"{investigation.model_dump_json(indent=2)}\n\n"
-            f"=== OBSERVED FINDINGS ===\n"
-            f"{_serialize_findings_for_prompt(findings)}"
-        )
+        messages = [
+            SystemMessage(content=REVIEWER_SYSTEM_PROMPT),
+            HumanMessage(
+                content=(
+                    f"{format_investigation_payload(investigation, findings)}\n\n"
+                    "Review the proposed investigation and validate severity, findings citations, "
+                    "and remediation."
+                )
+            ),
+        ]
         try:
-            result = await structured_llm.ainvoke([SystemMessage(content=prompt_text)])
+            result = await structured_llm.ainvoke(messages)
             self._extract_usage(result)
             if isinstance(result, ReviewResult):
                 return result
