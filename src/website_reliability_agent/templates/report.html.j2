@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Web Auditor — Report {{ report.run_id }}</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #38bdf8;
+            --accent: #818cf8;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --radius: 8px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.5rem;
+        }
+        h1 { font-size: 1.75rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+        h2 { font-size: 1.25rem; font-weight: 600; color: var(--text); margin: 2rem 0 1rem; border-left: 4px solid var(--primary); padding-left: 0.5rem; }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .meta-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+        }
+        .meta-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+        .meta-value { font-size: 0.95rem; color: var(--text); font-weight: 500; word-break: break-all; }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-clean { background: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .status-warning { background: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+        .status-danger { background: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+        }
+        .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .card-p { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .badge-low { background: #0284c7; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .badge-medium { background: #d97706; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .badge-high { background: #dc2626; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            font-size: 0.875rem;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+        th { background: #131d31; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
+        tr:last-child td { border-bottom: none; }
+        .code-tag {
+            font-family: monospace;
+            background: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+        .remediation-box {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid var(--primary);
+            padding: 0.75rem 1rem;
+            margin-top: 0.75rem;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            font-size: 0.85rem;
+        }
+        .empty-notice {
+            background: var(--card-bg);
+            border: 1px dashed var(--card-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--card-border);
+            padding-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Web Auditor — Reliability Report</h1>
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">Seed URL</div>
+                    <div class="meta-value">{{ report.seed_url }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Run ID</div>
+                    <div class="meta-value">{{ report.run_id }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Status</div>
+                    <div class="meta-value">
+                        {% if report.exit_code == 0 %}
+                            <span class="status-badge status-clean">Clean (0)</span>
+                        {% elif report.exit_code == 1 %}
+                            <span class="status-badge status-warning">Issues Detected (1)</span>
+                        {% else %}
+                            <span class="status-badge status-danger">Scan Failed (2)</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Pages Scanned</div>
+                    <div class="meta-value">{{ report.pages_scanned }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Analysis Status</div>
+                    <div class="meta-value">{{ report.analysis_status }}</div>
+                </div>
+            </div>
+        </header>
+
+        {% if report.operational_errors %}
+        <section>
+            <h2>Operational Notices</h2>
+            <div class="card" style="border-color: var(--warning);">
+                <ul style="padding-left: 1.25rem;">
+                    {% for err in report.operational_errors %}
+                    <li style="color: var(--warning); font-size: 0.875rem;">{{ err }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+        {% endif %}
+
+        <section>
+            <h2>Grounded Incidents ({{ report.incidents|length }})</h2>
+            {% if report.incidents %}
+                <div class="card-grid">
+                    {% for inc in report.incidents %}
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <div class="card-title">{{ inc.title }}</div>
+                            <span class="badge-{{ inc.severity }}">{{ inc.severity }}</span>
+                        </div>
+                        <p class="card-p">{{ inc.summary }}</p>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            <strong>Affected Pages ({{ inc.affected_pages|length }}):</strong>
+                            <ul style="padding-left: 1.2rem; margin-top: 0.25rem;">
+                                {% for page in inc.affected_pages %}
+                                <li>{{ page }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            <strong>Finding IDs:</strong> {{ inc.finding_ids|join(", ") }}
+                        </div>
+                        <div class="remediation-box">
+                            <strong>Remediation:</strong> {{ inc.remediation }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-notice">
+                    {% if report.exit_code == 0 %}
+                        No incidents detected. Seed scan was completely clean.
+                    {% else %}
+                        No synthesized cross-page incidents generated (either findings were unique or agent analysis was bypassed/unavailable).
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section>
+            <h2>Deterministic Findings ({{ report.findings|length }})</h2>
+            {% if report.findings %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Finding ID</th>
+                            <th>Code</th>
+                            <th>Source Page</th>
+                            <th>Message</th>
+                            <th>Target / Resource</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in report.findings %}
+                        <tr>
+                            <td><span class="code-tag">{{ f.finding_id }}</span></td>
+                            <td><span class="code-tag">{{ f.check_code }}</span></td>
+                            <td style="word-break: break-all;">{{ f.source_page }}</td>
+                            <td>{{ f.message }}</td>
+                            <td style="word-break: break-all;">{{ f.target_url or "-" }}</td>
+                            <td>{{ f.occurrence_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-notice">
+                    No findings detected. All deterministic checks passed.
+                </div>
+            {% endif %}
+        </section>
+
+        <section>
+            <h2>Execution Trace ({{ trace|length }} events)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Node</th>
+                        <th>Event</th>
+                        <th>Status</th>
+                        <th>Elapsed (ms)</th>
+                        <th>Counts / Tool</th>
+                        <th>Model Usage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evt in trace %}
+                    <tr>
+                        <td><strong>{{ evt.node }}</strong></td>
+                        <td>{{ evt.event_type }}</td>
+                        <td>
+                            {% if evt.status == "completed" %}
+                                <span style="color: var(--success);">{{ evt.status }}</span>
+                            {% elif evt.status == "failed" or evt.status == "rejected" %}
+                                <span style="color: var(--danger);">{{ evt.status }}</span>
+                            {% else %}
+                                <span>{{ evt.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ evt.elapsed_ms }}</td>
+                        <td>
+                            {% if evt.tool_name %}
+                                <span class="code-tag">{{ evt.tool_name }}</span>
+                            {% endif %}
+                            {% for k, v in evt.counts.items() %}
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">{{ k }}={{ v }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if evt.model_usage %}
+                                <span style="font-size: 0.75rem; color: var(--accent);">
+                                    tokens: in={{ evt.model_usage.get('input_tokens', 0) }}, out={{ evt.model_usage.get('output_tokens', 0) }}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <footer>
+            Generated by AI Web Auditor (Website Reliability Agent) at {{ report.completed_at }}
+        </footer>
+    </div>
+</body>
+</html>

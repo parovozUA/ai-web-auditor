@@ -222,7 +222,6 @@ def _tool_request_node(services: WorkflowServices) -> Any:
                 event_type="agent_tool_decision",
                 status="completed",
                 elapsed_ms=elapsed,
-                tool_name="scan_related_pages",
                 model_usage=services.agents.last_usage,
             )
             return {}
