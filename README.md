@@ -2,148 +2,283 @@
 
 [![CI](https://github.com/parovozUA/ai-web-auditor/actions/workflows/ci.yml/badge.svg)](https://github.com/parovozUA/ai-web-auditor/actions/workflows/ci.yml)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-brightgreen?logo=github)](https://parovozua.github.io/ai-web-auditor/)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.13](https://img.shields.io/badge/Python-3.13-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![LangChain](https://img.shields.io/badge/LangChain-Ecosystem-1C3C3C?logo=langchain&logoColor=white)](https://python.langchain.com/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-StateGraph-orange)](https://langchain-ai.github.io/langgraph/)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Gemini 3.5 Flash](https://img.shields.io/badge/Gemini-3.5%20Flash-8E75B2?logo=googlegemini&logoColor=white)](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**AI Web Auditor** is an autonomous, production-grade website reliability and SEO auditor. It pairs deterministic browser instrumentation with bounded dual-agent AI reasoning to uncover, correlate, and prioritize website defects without hallucinated evidence or unbounded crawling.
+**Deterministic first. Agentic only when needed.**
 
-👉 **[View Live Sample Report on GitHub Pages](https://parovozua.github.io/ai-web-auditor/)**
+AI Web Auditor is a command-line tool that scans a single URL with Playwright for SEO issues, JavaScript errors, broken internal links, and failed resources.
 
----
+When the seed page contains findings, a bounded LangGraph workflow can use Gemini to inspect up to five related same-origin pages, group recurring issues into incidents, review the analysis, and generate evidence-linked HTML and JSON reports with an execution trace.
 
-## Key Capabilities
+**[View the live sample report](https://parovozua.github.io/ai-web-auditor/)**
 
-- **Deterministic Safety Guardrails:** Strict SSRF protection via pre-flight DNS pinning, canonical URL normalization, same-origin restrictions, and automatic credential/query parameter masking (`***`).
-- **Deep Browser Instrumentation:** Headless Chromium instrumentation via Playwright capturing uncaught JavaScript exceptions, page console errors, failed network requests, HTTP error statuses, missing/duplicate SEO tags, and broken internal links.
-- **Bounded Dual-Agent Architecture:** Powered by Google Gemini (`gemini-3.5-flash`) orchestrated with LangGraph. Employs an **Investigator Agent** (to discover cross-page patterns with at most one tool invocation scanning up to 5 related pages) and an independent **Reviewer Agent** (to filter false positives and validate remediation clarity).
-- **Deterministic Grounding Engine:** Pure validation layer that prunes hallucinated finding IDs, verifies evidence citations, and recomputes affected page sets directly from observed data.
-- **Graceful Operational Degradation:** Skips agent execution entirely on clean pages or unrecoverable navigation failures, and falls back to deterministic finding tables if model APIs are unavailable or fail.
-- **Self-Contained Static Reports:** Generates standalone dark-mode HTML reports, machine-readable JSON summaries, and execution trace logs.
-
----
-
-## Architecture Overview
+## Agent workflow
 
 ```mermaid
 flowchart TD
-    A([Seed URL]) --> B[Deterministic URL Policy & SSRF Guard]
-    B --> C[Playwright Seed Scanner]
-    C --> D{Seed Findings?}
-    D -- None (Clean) --> H[Artifact Renderer]
-    D -- Navigation Failed --> H
-    D -- Issues Detected --> E[Investigator Agent: Tool Call Decision]
-    E -- No Crawl --> F[Investigator Synthesis]
-    E -- Crawl Approved --> G[Bounded Related Scan: Max 5 Pages]
-    G --> F
-    F --> I[Reviewer Agent: Critique & Severity Validation]
-    I --> J[Deterministic Grounding Validator]
-    J --> H
-    H --> K[HTML Report, JSON Report, Trace Log]
+    A([Seed URL]) --> B[URL policy and network guard]
+    B --> C[Deterministic Playwright scan]
+    C --> D{Navigation succeeded?}
+
+    D -->|No| R[Render deterministic artifacts]
+    D -->|Yes| E{Seed findings?}
+
+    E -->|No: zero Gemini calls| R
+    E -->|Yes| F[Gemini Investigator: tool decision]
+
+    F -->|No valid call or unavailable| R
+    F -->|scan_related_pages| G[Scan up to 5 related same-origin pages]
+
+    G --> H[Investigator synthesis]
+    H --> I[Reviewer Agent]
+
+    I -->|Rejected or unavailable| R
+    I -->|Accepted or corrected| J[Deterministic reference validation]
+
+    J --> R
+    R --> K[HTML report, JSON report, trace]
 ```
 
----
+### Specialized roles
 
-## Evaluation Benchmark
+**Investigator**
 
-The system is evaluated against a 5-case benchmark verifying routing, finding recall, claim grounding, pattern detection, and bounded execution:
+- Receives deterministic findings as untrusted structured data.
+- Decides whether to call the single allowed tool, `scan_related_pages`.
+- Synthesizes seed and related-page findings into incident proposals.
+- Suggests severity and remediation without inventing source-code causes.
 
-| Metric | Target | Result | Description |
-| :--- | :---: | :---: | :--- |
-| **Routing Accuracy** | `100%` | **`100%`** | Correctly skips AI on clean pages; routes to investigator only on findings. |
-| **Finding Recall** | `100%` | **`100%`** | Captures all deterministic SEO, JS, link, and network anomalies. |
-| **Grounded Claim Precision** | `100%` | **`100%`** | Zero hallucinated finding IDs or unobserved page citations in incidents. |
-| **Pattern Recall** | `100%` | **`100%`** | Correctly identifies multi-page correlated root causes (e.g. shared widget failures). |
-| **Related Page Limit** | `<= 5` | **`2` (<= 5)** | Enforces strict bound on secondary pages crawled per run. |
-| **Schema Validity** | `100%` | **`100%`** | All generated JSON and report models strictly conform to Pydantic schemas. |
+**Reviewer**
 
----
+- Uses a separate system prompt and structured output schema.
+- Has no tools.
+- Accepts, corrects, or rejects the proposed incident grouping.
+- Checks finding references, severity, and remediation clarity.
+
+**Grounding validator**
+
+- Is deterministic and does not call an LLM.
+- Removes finding IDs that do not exist in scanner output.
+- Drops incident proposals that have no valid findings.
+- Recomputes affected pages directly from validated findings.
+
+The Investigator and Reviewer may use the same configured Gemini model, but they operate as separate role-specific stages in the graph.
+
+## What it checks
+
+| Category | Finding codes | Detection |
+| --- | --- | --- |
+| SEO | `title_missing` | Missing or empty `<title>` |
+| SEO | `h1_missing` | Page contains no `<h1>` |
+| SEO | `h1_multiple` | Page contains more than one `<h1>` |
+| SEO | `meta_description_missing` | Missing or empty meta description |
+| JavaScript | `console_error` | Console errors and uncaught page exceptions |
+| Links | `broken_internal_link` | Same-origin internal links that fail or return HTTP 4xx/5xx |
+| Resources | `resource_http_error` | Failed non-navigation requests and resource HTTP 4xx/5xx responses |
+| Navigation | `navigation_failed` | URL-policy rejection or Playwright navigation failure |
+
+The link checker validates up to 50 same-origin internal links per scanned page.
+
+## Execution bounds and guardrails
+
+- Only `http` and `https` URLs are accepted.
+- Embedded URL credentials are rejected.
+- Non-global and private network targets are blocked by default.
+- Related-page selection and internal-link validation remain same-origin.
+- At most five related pages are selected in DOM order.
+- The related-page tool can execute at most once per run.
+- Related scans evaluate only finding codes observed on the seed page.
+- Web observations are delimited and treated as untrusted prompt data.
+- Agent responses must conform to strict Pydantic schemas.
+- Model failures produce a deterministic fallback report.
+
+> [!IMPORTANT]
+> URL validation reduces SSRF exposure but is not a replacement for network-level sandboxing. Use `--allow-private` only for trusted local fixtures.
+
+> [!NOTE]
+> Query values inside finding URLs are masked. The original seed URL is retained in report metadata, so do not place credentials or secrets in the URL.
 
 ## Quickstart
 
-### 1. Prerequisites
-- Python 3.13+
-- [`uv`](https://docs.astral.sh/uv/) package manager
+### Prerequisites
 
-### 2. Installation
+- Python 3.13
+- [`uv`](https://docs.astral.sh/uv/)
+- Chromium installed through Playwright
+
+### Installation
+
 ```bash
-# Clone the repository
 git clone https://github.com/parovozUA/ai-web-auditor.git
 cd ai-web-auditor
 
-# Install dependencies into virtual environment
 uv sync --all-extras
-
-# Install Playwright browser dependencies
 uv run playwright install --with-deps chromium
 ```
 
-### 3. Environment Configuration
-Create a `.env` file (see `.env.example`):
-```bash
-cp .env.example .env
-```
-Add your Google Gemini API key:
+### Gemini configuration
+
+Create a `.env` file in the repository root:
+
 ```ini
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=your_gemini_api_key
 ```
-*(Note: Clean scans and deterministic tests run entirely offline without requiring a Gemini API key.)*
 
-### 4. Running an Audit
+The API key is optional for deterministic scanning:
+
+- A clean scan makes no Gemini calls.
+- If findings exist but Gemini is unavailable, the tool still generates deterministic reports.
+- A successful full agent path uses up to three model calls: tool decision, investigation, and review.
+
+## Usage
+
+Scan a public page:
+
 ```bash
-# Scan a live website
-uv run python -m ai_web_auditor scan https://example.com
-
-# Or using the installed console script
 uv run ai-web-auditor scan https://example.com
+```
 
-# Scan a local fixture or test server (permits loopback addresses)
+Select another Gemini model:
+
+```bash
+uv run ai-web-auditor scan https://example.com --model gemini-3.5-flash
+```
+
+Choose a custom artifact directory:
+
+```bash
+uv run ai-web-auditor scan https://example.com --artifacts-dir audit-results
+```
+
+### Run against the local fixture site
+
+Start the fixture server:
+
+```bash
+uv run python tests/fixture_site.py --port 8765
+```
+
+In another terminal:
+
+```bash
 uv run ai-web-auditor scan http://127.0.0.1:8765/seo --allow-private
 ```
 
----
+## CLI options
 
-## CLI Reference
+| Option | Default | Description |
+| --- | --- | --- |
+| `url` | Required | Seed URL to scan |
+| `--allow-private` | Disabled | Allow loopback and private network targets |
+| `--model` | `gemini-3.5-flash` | Gemini model used by agent stages |
+| `--artifacts-dir` | `artifacts` | Root directory for generated run artifacts |
+
+### Exit codes
+
+| Code | Meaning |
+| ---: | --- |
+| `0` | Scan completed with no deterministic findings |
+| `1` | Scan completed with one or more findings |
+| `2` | Seed navigation failed or a fatal operational error occurred |
+
+Exit codes depend on deterministic scan results, not on whether Gemini produced incidents.
+
+## Output artifacts
+
+Each invocation creates a unique run directory:
 
 ```text
-usage: ai-web-auditor scan [-h] [--allow-private] [--model MODEL]
-                           [--artifacts-dir ARTIFACTS_DIR]
-                           url
-
-positional arguments:
-  url                   Target seed URL to scan
-
-options:
-  -h, --help            show this help message and exit
-  --allow-private       Permit loopback, private, and local fixture addresses
-  --model MODEL         Gemini model name (default: gemini-3.5-flash)
-  --artifacts-dir ARTIFACTS_DIR
-                        Directory root for output artifacts (default: artifacts)
+artifacts/
+└── run-YYYYMMDD-HHMMSS-xxxxxx/
+    ├── report.html
+    ├── report.json
+    └── trace.json
 ```
 
-### Exit Codes
-- `0`: Scan completed cleanly with zero findings.
-- `1`: Scan completed with deterministic findings and/or AI incidents.
-- `2`: Seed navigation failure or fatal operational error.
+| Artifact | Contents |
+| --- | --- |
+| `report.html` | Self-contained dark-mode report with findings, incidents, operational notices, and trace events |
+| `report.json` | Machine-readable run metadata, findings, validated incidents, and analysis status |
+| `trace.json` | Graph-node statuses, elapsed time, counts, tool execution, model usage when available, and error categories |
 
----
+The HTML file can be opened locally without running a server.
 
-## Testing and Verification
+## Evaluation
+
+The repository contains a five-case seeded benchmark covering:
+
+1. Clean-page routing
+2. Repeated SEO findings
+3. Repeated JavaScript failures
+4. Broken links and failed resources
+5. Mixed findings with partial cross-page recurrence
+
+Run it with:
 
 ```bash
-# Run all unit, agent, and integration tests
-uv run pytest -m "not live" -v
-
-# Run the 5-case benchmark evaluation suite
 uv run python scripts/run_evals.py
+```
 
-# Run static type checking and linting
+Metrics are written to:
+
+```text
+artifacts/evals/<timestamp>/metrics.json
+```
+
+The default benchmark uses local fixture pages and a deterministic fake agent backend. It validates routing, contracts, grounding, and execution bounds without introducing model variance.
+
+It is not presented as a general benchmark of Gemini reasoning quality.
+
+An opt-in live Gemini smoke test is available separately:
+
+```bash
+uv run pytest -m live -v
+```
+
+`GEMINI_API_KEY` must be exported in the test process environment. Live tests are excluded from CI.
+
+## Development
+
+Run the non-live test suite:
+
+```bash
+uv run pytest -m "not live" -v
+```
+
+Run linting and static type checking:
+
+```bash
 uv run ruff check .
 uv run mypy src/ tests/ scripts/
+```
 
-# Build package wheel and sdist
+Build the package:
+
+```bash
 uv build
 ```
 
----
+GitHub Actions runs linting, type checking, non-live tests, seeded evals, and package builds on Linux, Windows, and macOS.
+
+## Technology stack
+
+| Area | Technology |
+| --- | --- |
+| Browser instrumentation | Playwright |
+| Link validation | HTTPX |
+| Agent orchestration | LangGraph |
+| Agent integration | LangChain Core and Google Gemini |
+| Data contracts | Pydantic v2 |
+| Reporting | Jinja2 and JSON |
+| Testing | pytest and pytest-asyncio |
+| Quality | Ruff and mypy |
+| Packaging | Hatchling and uv |
+| Automation | GitHub Actions and GitHub Pages |
+
+## License
+
+This project is available under the [MIT License](LICENSE).
