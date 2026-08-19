@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "website-reliability-agent"
+version = "0.1.0"
+description = "AI Web Auditor: A bounded agentic website reliability scanner for an AI Engineer portfolio"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "httpx",
+  "jinja2",
+  "langchain-core",
+  "langchain-google-genai",
+  "langgraph",
+  "playwright",
+  "pydantic>=2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy",
+  "pytest",
+  "pytest-asyncio",
+  "ruff",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/website_reliability_agent"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+  "integration: requires local Chromium",
+  "live: requires GEMINI_API_KEY and network access",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+packages = ["website_reliability_agent"]
