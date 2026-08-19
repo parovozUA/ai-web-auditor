@@ -4,12 +4,12 @@ from pathlib import Path
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from website_reliability_agent.models import (
+from ai_web_auditor.models import (
     AnalysisStatus,
     ArtifactPaths,
     RunReport,
 )
-from website_reliability_agent.workflow import AuditState, exit_code_for
+from ai_web_auditor.workflow import AuditState, exit_code_for
 
 
 def _to_run_report(state: AuditState) -> RunReport:
@@ -37,7 +37,7 @@ class ReportRenderer:
     def __init__(self, artifact_root: Path) -> None:
         self._artifact_root = artifact_root
         self._environment = Environment(
-            loader=PackageLoader("website_reliability_agent", "templates"),
+            loader=PackageLoader("ai_web_auditor", "templates"),
             autoescape=select_autoescape(("html", "xml", "j2", "html.j2")),
         )
 

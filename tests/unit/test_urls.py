@@ -1,6 +1,6 @@
 import pytest
 
-from website_reliability_agent.urls import (
+from ai_web_auditor.urls import (
     UnsafeUrlError,
     UrlPolicy,
     canonicalize_url,

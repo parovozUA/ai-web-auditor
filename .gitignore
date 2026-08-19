@@ -25,3 +25,5 @@ venv/
 .ruff_cache/
 artifacts/
 playwright-report/
+.idea/
+.vscode/

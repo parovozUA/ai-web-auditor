@@ -1,8 +1,8 @@
-from website_reliability_agent.checks import (
+from ai_web_auditor.checks import (
     collect_seo_observations,
     normalize_findings,
 )
-from website_reliability_agent.models import FindingCode, RawObservation
+from ai_web_auditor.models import FindingCode, RawObservation
 
 
 def test_blank_seo_values_create_expected_findings() -> None:

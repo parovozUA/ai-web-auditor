@@ -1,8 +1,8 @@
 import httpx
 
-from website_reliability_agent.link_checker import LinkChecker
-from website_reliability_agent.models import FindingCode
-from website_reliability_agent.urls import UrlPolicy
+from ai_web_auditor.link_checker import LinkChecker
+from ai_web_auditor.models import FindingCode
+from ai_web_auditor.urls import UrlPolicy
 
 
 async def test_link_checker_reports_404_and_deduplicates_urls() -> None:

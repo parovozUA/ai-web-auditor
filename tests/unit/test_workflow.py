@@ -2,8 +2,7 @@ from typing import cast
 
 import pytest
 
-from tests.fakes import FakeAgentBackend, FakeArtifactWriter, FakeScanner
-from website_reliability_agent.models import (
+from ai_web_auditor.models import (
     AnalysisStatus,
     Finding,
     FindingCategory,
@@ -18,14 +17,15 @@ from website_reliability_agent.models import (
     ScanStatus,
     Severity,
 )
-from website_reliability_agent.tracing import TraceRecorder
-from website_reliability_agent.workflow import (
+from ai_web_auditor.tracing import TraceRecorder
+from ai_web_auditor.workflow import (
     AuditState,
     WorkflowServices,
     build_audit_graph,
     exit_code_for,
     initial_state,
 )
+from tests.fakes import FakeAgentBackend, FakeArtifactWriter, FakeScanner
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 import json
 
-from website_reliability_agent.models import Finding, InvestigationResult
+from ai_web_auditor.models import Finding, InvestigationResult
 
 INVESTIGATOR_TOOL_SYSTEM_PROMPT = """You are a Website Reliability Investigator.
 You analyze website audit findings on a seed page and call tools to check for recurring issues.
@@ -34,6 +34,10 @@ GUIDELINES:
 3. You have no tools.
 4. Do not invent any new findings or finding IDs.
 """
+
+INVESTIGATOR_TOOL_PROMPT = INVESTIGATOR_TOOL_SYSTEM_PROMPT
+INVESTIGATOR_SYNTHESIS_PROMPT = INVESTIGATOR_SYNTHESIS_SYSTEM_PROMPT
+REVIEWER_PROMPT = REVIEWER_SYSTEM_PROMPT
 
 
 def format_findings_payload(findings: list[Finding]) -> str:

@@ -1,4 +1,4 @@
-from website_reliability_agent.evaluation import CaseResult, calculate_metrics
+from ai_web_auditor.evaluation import CaseResult, calculate_metrics
 
 
 def test_metrics_use_explicit_numerators_and_denominators() -> None:

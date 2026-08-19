@@ -1,5 +1,5 @@
-from website_reliability_agent.grounding import validate_grounded_incidents
-from website_reliability_agent.models import (
+from ai_web_auditor.grounding import validate_grounded_incidents
+from ai_web_auditor.models import (
     Finding,
     FindingCategory,
     FindingCode,

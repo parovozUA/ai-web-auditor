@@ -3,7 +3,7 @@ from typing import Any
 
 from pydantic import Field
 
-from website_reliability_agent.models import RunReport, StrictModel
+from ai_web_auditor.models import RunReport, StrictModel
 
 
 class EvalCase(StrictModel):

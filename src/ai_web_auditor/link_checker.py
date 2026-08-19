@@ -4,8 +4,8 @@ from urllib.parse import urljoin, urlsplit
 
 import httpx
 
-from website_reliability_agent.models import FindingCode, RawObservation
-from website_reliability_agent.urls import (
+from ai_web_auditor.models import FindingCode, RawObservation
+from ai_web_auditor.urls import (
     Origin,
     UnsafeUrlError,
     UrlPolicy,

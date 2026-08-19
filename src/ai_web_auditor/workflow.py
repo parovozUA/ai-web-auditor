@@ -5,9 +5,9 @@ from typing import Any, Protocol, TypedDict
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from website_reliability_agent.agents import AgentBackend
-from website_reliability_agent.grounding import validate_grounded_incidents
-from website_reliability_agent.models import (
+from ai_web_auditor.agents import AgentBackend
+from ai_web_auditor.grounding import validate_grounded_incidents
+from ai_web_auditor.models import (
     AnalysisStatus,
     ArtifactPaths,
     Finding,
@@ -23,8 +23,8 @@ from website_reliability_agent.models import (
     ScanStatus,
     TraceEvent,
 )
-from website_reliability_agent.tracing import TraceRecorder
-from website_reliability_agent.urls import (
+from ai_web_auditor.tracing import TraceRecorder
+from ai_web_auditor.urls import (
     Origin,
     canonicalize_url,
     origin_of,

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from website_reliability_agent.models import (
+from ai_web_auditor.models import (
     AnalysisStatus,
     Finding,
     FindingCategory,
@@ -15,8 +15,8 @@ from website_reliability_agent.models import (
     Severity,
     TraceEvent,
 )
-from website_reliability_agent.reporting import ReportRenderer
-from website_reliability_agent.workflow import AuditState
+from ai_web_auditor.reporting import ReportRenderer
+from ai_web_auditor.workflow import AuditState
 
 
 @pytest.fixture

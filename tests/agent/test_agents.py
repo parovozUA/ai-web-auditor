@@ -4,8 +4,8 @@ import pytest
 from langchain_core.messages import AIMessage
 from langchain_core.tools import BaseTool
 
-from website_reliability_agent.agents import GeminiAgentBackend
-from website_reliability_agent.models import (
+from ai_web_auditor.agents import GeminiAgentBackend
+from ai_web_auditor.models import (
     Finding,
     FindingCategory,
     FindingCode,

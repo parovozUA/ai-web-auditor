@@ -1,14 +1,14 @@
 import json
 from pathlib import Path
 
-from tests.fakes import RepeatingAgentBackend
-from tests.fixture_site import FixtureSite
-from website_reliability_agent.cli import ScanOptions, run_scan
-from website_reliability_agent.evaluation import (
+from ai_web_auditor.cli import ScanOptions, run_scan
+from ai_web_auditor.evaluation import (
     CaseResult,
     calculate_metrics,
     evaluate_case,
 )
+from tests.fakes import RepeatingAgentBackend
+from tests.fixture_site import FixtureSite
 
 
 async def test_seeded_cases_meet_all_thresholds(

@@ -1,7 +1,7 @@
 from typing import Any
 
-from website_reliability_agent.agents import AgentUnavailableError
-from website_reliability_agent.models import (
+from ai_web_auditor.agents import AgentUnavailableError
+from ai_web_auditor.models import (
     ArtifactPaths,
     Finding,
     FindingCode,
@@ -9,8 +9,8 @@ from website_reliability_agent.models import (
     PageScanResult,
     ReviewResult,
 )
-from website_reliability_agent.urls import Origin
-from website_reliability_agent.workflow import AuditState
+from ai_web_auditor.urls import Origin
+from ai_web_auditor.workflow import AuditState
 
 
 class FakeScanner:
@@ -118,7 +118,7 @@ class RepeatingAgentBackend(FakeAgentBackend):
         for signature, grouped in signatures.items():
             pages = {f.source_page for f in grouped}
             if len(pages) >= 2:
-                from website_reliability_agent.models import IncidentProposal, Severity
+                from ai_web_auditor.models import IncidentProposal, Severity
 
                 incidents.append(
                     IncidentProposal(
@@ -141,7 +141,7 @@ class RepeatingAgentBackend(FakeAgentBackend):
         findings: list[Finding],
     ) -> ReviewResult:
         self.call_order.append("review")
-        from website_reliability_agent.models import ReviewDecision
+        from ai_web_auditor.models import ReviewDecision
 
         return ReviewResult(
             decision=ReviewDecision.ACCEPT,

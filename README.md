@@ -1,4 +1,4 @@
-# AI Web Auditor (Website Reliability Agent)
+# AI Web Auditor
 
 [![CI](https://github.com/parovozUA/ai-web-auditor/actions/workflows/ci.yml/badge.svg)](https://github.com/parovozUA/ai-web-auditor/actions/workflows/ci.yml)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
@@ -88,10 +88,13 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### 4. Running an Audit
 ```bash
 # Scan a live website
-uv run python -m website_reliability_agent scan https://example.com
+uv run python -m ai_web_auditor scan https://example.com
+
+# Or using the installed console script
+uv run ai-web-auditor scan https://example.com
 
 # Scan a local fixture or test server (permits loopback addresses)
-uv run python -m website_reliability_agent scan http://127.0.0.1:8765/seo --allow-private
+uv run ai-web-auditor scan http://127.0.0.1:8765/seo --allow-private
 ```
 
 ---
@@ -99,9 +102,9 @@ uv run python -m website_reliability_agent scan http://127.0.0.1:8765/seo --allo
 ## CLI Reference
 
 ```text
-usage: website-reliability-agent scan [-h] [--allow-private] [--model MODEL]
-                                     [--artifacts-dir ARTIFACTS_DIR]
-                                     url
+usage: ai-web-auditor scan [-h] [--allow-private] [--model MODEL]
+                           [--artifacts-dir ARTIFACTS_DIR]
+                           url
 
 positional arguments:
   url                   Target seed URL to scan
@@ -139,7 +142,3 @@ uv build
 ```
 
 ---
-
-## License
-
-Licensed under the [Apache License, Version 2.0](LICENSE). Copyright 2026 parovozUA.

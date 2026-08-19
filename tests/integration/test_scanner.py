@@ -1,9 +1,9 @@
 import pytest
 
+from ai_web_auditor.models import FindingCode, ScanStatus
+from ai_web_auditor.scanner import PageScanner
+from ai_web_auditor.urls import origin_of
 from tests.fixture_site import FixtureSite
-from website_reliability_agent.models import FindingCode, ScanStatus
-from website_reliability_agent.scanner import PageScanner
-from website_reliability_agent.urls import origin_of
 
 pytestmark = pytest.mark.integration
 

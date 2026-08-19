@@ -2,8 +2,8 @@ from typing import Any
 
 import pytest
 
-from website_reliability_agent.cli import build_parser, main
-from website_reliability_agent.models import ArtifactPaths
+from ai_web_auditor.cli import build_parser, main
+from ai_web_auditor.models import ArtifactPaths
 
 
 @pytest.fixture
@@ -32,6 +32,6 @@ def test_main_returns_scan_exit_code(
     async def fake_run_scan(options: Any, agents: Any = None) -> tuple[int, ArtifactPaths]:
         return 1, artifact_paths
 
-    monkeypatch.setattr("website_reliability_agent.cli.run_scan", fake_run_scan)
+    monkeypatch.setattr("ai_web_auditor.cli.run_scan", fake_run_scan)
 
     assert main(["scan", "https://example.com"]) == 1

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from website_reliability_agent.models import (
+from ai_web_auditor.models import (
     Finding,
     FindingCategory,
     FindingCode,

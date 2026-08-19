@@ -9,14 +9,14 @@ _repo_root = Path(__file__).resolve().parent.parent
 if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))
 
-from tests.fakes import RepeatingAgentBackend  # noqa: E402
-from tests.fixture_site import FixtureSite  # noqa: E402
-from website_reliability_agent.cli import ScanOptions, run_scan  # noqa: E402
-from website_reliability_agent.evaluation import (  # noqa: E402
+from ai_web_auditor.cli import ScanOptions, run_scan  # noqa: E402
+from ai_web_auditor.evaluation import (  # noqa: E402
     CaseResult,
     calculate_metrics,
     evaluate_case,
 )
+from tests.fakes import RepeatingAgentBackend  # noqa: E402
+from tests.fixture_site import FixtureSite  # noqa: E402
 
 
 async def run_all_evals() -> int:

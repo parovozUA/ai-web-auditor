@@ -7,14 +7,14 @@ from pathlib import Path
 from typing import cast
 from uuid import uuid4
 
-from website_reliability_agent.agents import AgentBackend, GeminiAgentBackend
-from website_reliability_agent.link_checker import LinkChecker
-from website_reliability_agent.models import ArtifactPaths
-from website_reliability_agent.reporting import ReportRenderer
-from website_reliability_agent.scanner import PageScanner
-from website_reliability_agent.tracing import TraceRecorder
-from website_reliability_agent.urls import UrlPolicy
-from website_reliability_agent.workflow import (
+from ai_web_auditor.agents import AgentBackend, GeminiAgentBackend
+from ai_web_auditor.link_checker import LinkChecker
+from ai_web_auditor.models import ArtifactPaths
+from ai_web_auditor.reporting import ReportRenderer
+from ai_web_auditor.scanner import PageScanner
+from ai_web_auditor.tracing import TraceRecorder
+from ai_web_auditor.urls import UrlPolicy
+from ai_web_auditor.workflow import (
     AuditState,
     WorkflowServices,
     build_audit_graph,
@@ -69,7 +69,7 @@ async def run_scan(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="website-reliability-agent",
+        prog="ai-web-auditor",
         description="AI Web Auditor — Bounded agentic website reliability scanner",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)

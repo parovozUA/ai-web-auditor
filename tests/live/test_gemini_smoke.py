@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
+from ai_web_auditor.agents import GeminiAgentBackend
+from ai_web_auditor.cli import ScanOptions, run_scan
+from ai_web_auditor.evaluation import evaluate_case
 from tests.fixture_site import FixtureSite
-from website_reliability_agent.agents import GeminiAgentBackend
-from website_reliability_agent.cli import ScanOptions, run_scan
-from website_reliability_agent.evaluation import evaluate_case
 
 pytestmark = [
     pytest.mark.live,

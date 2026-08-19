@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
+from ai_web_auditor.cli import ScanOptions, run_scan
 from tests.fakes import FakeAgentBackend, RepeatingAgentBackend
 from tests.fixture_site import FixtureSite
-from website_reliability_agent.cli import ScanOptions, run_scan
 
 pytestmark = pytest.mark.integration
 

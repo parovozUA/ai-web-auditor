@@ -3,10 +3,10 @@ from collections.abc import AsyncIterator, Iterator
 import pytest
 import pytest_asyncio
 
+from ai_web_auditor.link_checker import LinkChecker
+from ai_web_auditor.scanner import PageScanner
+from ai_web_auditor.urls import UrlPolicy
 from tests.fixture_site import FixtureSite
-from website_reliability_agent.link_checker import LinkChecker
-from website_reliability_agent.scanner import PageScanner
-from website_reliability_agent.urls import UrlPolicy
 
 
 @pytest.fixture(scope="session")

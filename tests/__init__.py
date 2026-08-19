@@ -1,1 +1,1 @@
-"""Website Reliability Agent test suite."""
+"""AI Web Auditor test suite."""

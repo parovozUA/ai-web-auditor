@@ -2,13 +2,13 @@ import re
 from collections.abc import Iterable
 from hashlib import sha256
 
-from website_reliability_agent.models import (
+from ai_web_auditor.models import (
     Finding,
     FindingCategory,
     FindingCode,
     RawObservation,
 )
-from website_reliability_agent.urls import sanitize_url
+from ai_web_auditor.urls import sanitize_url
 
 CATEGORY_BY_CODE: dict[FindingCode, FindingCategory] = {
     FindingCode.TITLE_MISSING: FindingCategory.SEO,
