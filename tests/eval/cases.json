@@ -1,0 +1,37 @@
+[
+  {
+    "name": "clean",
+    "path": "/clean",
+    "expects_agent_path": false,
+    "expected_seed_codes": [],
+    "expected_repeated_signatures": []
+  },
+  {
+    "name": "seo_repeated",
+    "path": "/seo",
+    "expects_agent_path": true,
+    "expected_seed_codes": ["title_missing", "meta_description_missing"],
+    "expected_repeated_signatures": ["title_missing", "meta_description_missing"]
+  },
+  {
+    "name": "javascript_repeated",
+    "path": "/js",
+    "expects_agent_path": true,
+    "expected_seed_codes": ["console_error"],
+    "expected_repeated_signatures": ["shared widget failure"]
+  },
+  {
+    "name": "broken_link_and_resource",
+    "path": "/link-resource",
+    "expects_agent_path": true,
+    "expected_seed_codes": ["broken_internal_link", "resource_http_error"],
+    "expected_repeated_signatures": []
+  },
+  {
+    "name": "mixed_partial_repeat",
+    "path": "/mixed",
+    "expects_agent_path": true,
+    "expected_seed_codes": ["title_missing", "console_error"],
+    "expected_repeated_signatures": ["title_missing"]
+  }
+]

@@ -187,7 +187,9 @@ class FixtureSite:
     def url(self, path: str = "/") -> str:
         if self._server is None:
             raise RuntimeError("FixtureSite is not started")
-        host, port = self._server.server_address
+        addr = self._server.server_address
+        host = str(addr[0])
+        port = int(addr[1])
         norm_path = path if path.startswith("/") else f"/{path}"
         return f"http://{host}:{port}{norm_path}"
 
