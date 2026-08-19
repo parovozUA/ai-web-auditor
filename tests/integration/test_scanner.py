@@ -1,12 +1,17 @@
 import pytest
 
+from tests.fixture_site import FixtureSite
 from website_reliability_agent.models import FindingCode, ScanStatus
+from website_reliability_agent.scanner import PageScanner
 from website_reliability_agent.urls import origin_of
 
 pytestmark = pytest.mark.integration
 
 
-async def test_clean_page_has_no_findings(page_scanner, fixture_site) -> None:
+async def test_clean_page_has_no_findings(
+    page_scanner: PageScanner,
+    fixture_site: FixtureSite,
+) -> None:
     result = await page_scanner.scan(fixture_site.url("/clean"))
 
     assert result.observation.scan_status is ScanStatus.COMPLETED
@@ -14,8 +19,8 @@ async def test_clean_page_has_no_findings(page_scanner, fixture_site) -> None:
 
 
 async def test_scanner_captures_seo_console_link_and_resource_failures(
-    page_scanner,
-    fixture_site,
+    page_scanner: PageScanner,
+    fixture_site: FixtureSite,
 ) -> None:
     seo = await page_scanner.scan(fixture_site.url("/seo"))
     js = await page_scanner.scan(fixture_site.url("/js"))
@@ -32,7 +37,10 @@ async def test_scanner_captures_seo_console_link_and_resource_failures(
     }
 
 
-async def test_related_scan_filters_to_seed_codes(page_scanner, fixture_site) -> None:
+async def test_related_scan_filters_to_seed_codes(
+    page_scanner: PageScanner,
+    fixture_site: FixtureSite,
+) -> None:
     result = await page_scanner.scan(
         fixture_site.url("/mixed/a"),
         enabled_codes={FindingCode.TITLE_MISSING},

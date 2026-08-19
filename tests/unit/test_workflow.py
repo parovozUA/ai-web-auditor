@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 
 from tests.fakes import FakeAgentBackend, FakeArtifactWriter, FakeScanner
@@ -18,6 +20,7 @@ from website_reliability_agent.models import (
 )
 from website_reliability_agent.tracing import TraceRecorder
 from website_reliability_agent.workflow import (
+    AuditState,
     WorkflowServices,
     build_audit_graph,
     exit_code_for,
@@ -169,7 +172,8 @@ async def test_clean_seed_skips_all_agent_calls(clean_result: PageScanResult) ->
         )
     )
 
-    state = await graph.ainvoke(initial_state("run-clean", "https://example.com/"))
+    raw_state = await graph.ainvoke(initial_state("run-clean", "https://example.com/"))
+    state = cast(AuditState, raw_state)
 
     assert agents.call_order == []
     assert state["tool_call_count"] == 0
@@ -199,7 +203,8 @@ async def test_findings_run_one_tool_scan_then_both_agents(
         )
     )
 
-    state = await graph.ainvoke(initial_state("run-agent", "https://example.com/"))
+    raw_state = await graph.ainvoke(initial_state("run-agent", "https://example.com/"))
+    state = cast(AuditState, raw_state)
 
     assert agents.call_order == ["tool_request", "investigate", "review"]
     assert state["tool_call_count"] == 1
@@ -223,7 +228,8 @@ async def test_investigator_failure_skips_reviewer_and_still_renders(
         )
     )
 
-    state = await graph.ainvoke(initial_state("run-fallback", "https://example.com/"))
+    raw_state = await graph.ainvoke(initial_state("run-fallback", "https://example.com/"))
+    state = cast(AuditState, raw_state)
 
     assert agents.call_order == ["tool_request"]
     assert state["analysis_status"] is AnalysisStatus.AGENT_ANALYSIS_UNAVAILABLE
@@ -245,7 +251,8 @@ async def test_seed_navigation_failure_uses_exit_code_two(
         )
     )
 
-    state = await graph.ainvoke(initial_state("run-failed", "https://example.com/"))
+    raw_state = await graph.ainvoke(initial_state("run-failed", "https://example.com/"))
+    state = cast(AuditState, raw_state)
 
     assert agents.call_order == []
     assert exit_code_for(state) == 2
