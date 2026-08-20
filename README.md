@@ -2,11 +2,9 @@
 
 [![CI](https://github.com/parovozUA/ai-web-auditor/actions/workflows/ci.yml/badge.svg)](https://github.com/parovozUA/ai-web-auditor/actions/workflows/ci.yml)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-brightgreen?logo=github)](https://parovozua.github.io/ai-web-auditor/)
-[![Python 3.13](https://img.shields.io/badge/Python-3.13-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![LangChain](https://img.shields.io/badge/LangChain-Ecosystem-1C3C3C?logo=langchain&logoColor=white)](https://python.langchain.com/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-StateGraph-orange)](https://langchain-ai.github.io/langgraph/)
 [![Gemini 3.5 Flash](https://img.shields.io/badge/Gemini-3.5%20Flash-8E75B2?logo=googlegemini&logoColor=white)](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Deterministic first. Agentic only when needed.**
 
